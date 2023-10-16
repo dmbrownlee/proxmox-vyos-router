@@ -1,0 +1,84 @@
+---
+- name: VyOS Router
+  hosts: all
+  tasks:
+    - name: Configure router
+      vyos.vyos.vyos_config:
+        comment: Configured by Terraform Ansible provider
+        lines:
+          - set system host-name {{ hostname }}
+          - set system name-server {{ nameserver }}
+          - set service ssh disable-host-validation
+          - set system time-zone {{ timezone }}
+    - name: Configure interface descriptions
+      vyos.vyos.vyos_config:
+        comment: Configured by Terraform Ansible provider
+        lines:
+          - set interfaces ethernet {{ item.name }} description {{ item.description }}
+      when:
+        - item.name is defined
+        - item.description is defined
+      loop: "{{ interfaces }}"
+    - name: Configure interface addresses
+      vyos.vyos.vyos_config:
+        comment: Configured by Terraform Ansible provider
+        lines:
+          - set interfaces ethernet {{ item.name }} address {{ item.address }}
+      when:
+        - item.name is defined
+        - item.address is defined
+      loop: "{{ interfaces }}"
+    - name: Ensure DNS service is configured
+      vars:
+        listen_address: "{{ dns | from_json | community.general.json_query('listen_address') }}"
+        allow_from: "{{ dns | from_json | community.general.json_query('allow_from') }}"
+      vyos.vyos.vyos_config:
+        comment: Configured by Terraform Ansible provider
+        lines:
+          - set service dns forwarding cache-size '0'
+          - set service dns forwarding listen-address {{listen_address}}
+          - set service dns forwarding allow-from {{allow_from}}
+      when:
+        - listen_address is defined
+        - allow_from is defined
+    - name: Ensure DHCP service is configured
+      vars:
+        network_name: "{{ dhcp | from_json | community.general.json_query('network_name') }}"
+        subnet: "{{ dhcp | from_json | community.general.json_query('subnet') }}"
+        default_router: "{{ dhcp | from_json | community.general.json_query('default_router') }}"
+        name_server: "{{ dhcp | from_json | community.general.json_query('name_server') }}"
+        domain_name: "{{ dhcp | from_json | community.general.json_query('domain_name') }}"
+        lease: "{{ dhcp | from_json | community.general.json_query('lease') }}"
+        range0_start: "{{ dhcp | from_json | community.general.json_query('range[0].start') }}"
+        range0_stop: "{{ dhcp | from_json | community.general.json_query('range[0].stop') }}"
+      vyos.vyos.vyos_config:
+        comment: Configured by Terraform Ansible provider
+        lines:
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} default-router '{{default_router}}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} name-server '{{name_server}}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} domain-name '{{domain_name}}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} lease '{{lease}}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 start '{{ range0_start }}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 stop '{{ range0_stop }}'
+      when:
+        - network_name is defined
+        - subnet is defined
+        - default_router is defined
+        - name_server is defined
+        - domain_name is defined
+        - lease is defined
+        - range0_start is defined
+        - range0_stop is defined
+    - name: Ensure NAT is configured
+      vars:
+        external_interface: "{{ dhcp | from_json | community.general.json_query('external_interface') }}"
+        internal_network: "{{ dhcp | from_json | community.general.json_query('internal_network') }}"
+      vyos.vyos.vyos_config:
+        comment: Configured by Terraform Ansible provider
+        lines:
+          - set nat source rule 100 outbound-interface 'eth0'
+          - set nat source rule 100 source address '10.48.80.0/24'
+          - set nat source rule 100 translation address masquerade
+      when:
+        - external_interface is defined
+        - internal_network is defined
