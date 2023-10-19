@@ -12,109 +12,21 @@ terraform {
   }
 }
 
-#======================================================
-# You must define these values when using this module
-#======================================================
-variable "hostname" {
-  description = "The hostname of the router"
-  type        = string
-}
-
-variable "target_node" {
-  description = "The Proxmox node on which to create the virtual machine"
-  type        = string
-}
-
-variable "interfaces" {
-  description = "List of interface attribute maps (bridge and vlan)"
-  type        = list(any)
-}
-
-variable "ansible_private_key" {
-  description = "The private SSH key ansible should use"
-  type        = string
-}
-
-#======================================================
-# These variables have defaults and are optional
-#======================================================
-variable "template_name" {
-  description = "The name of the template to clone"
-  type        = string
-  #default     = "vyos-1.5R-202310090023"
-  default = "vyos1.5"
-}
-
-variable "cores" {
-  description = "The number of CPU cores per socket"
-  type        = number
-  default     = 1
-}
-
-variable "cpu" {
-  description = "The type of virtual CPU"
-  type        = string
-  default     = "x86-64-v2-AES"
-}
-
-variable "memory" {
-  description = "The amount of RAM memory (in MB)"
-  type        = number
-  default     = 512
-}
-
-variable "full_clone" {
-  description = "This virtual machine should be independent of the template"
-  type        = bool
-  default     = false
-}
-
-variable "disk_size" {
-  description = "The size of the hard disk"
-  type        = string
-  default     = "2G"
-}
-
-variable "disk_storage" {
-  description = "Name of storage to use for the disks"
-  type        = string
-  default     = "local-lvm"
-}
-
-variable "ssh_user" {
-  description = "Name of storage to use for the disks"
-  type        = string
-  default     = "vyos"
-}
-
-variable "nameserver" {
-  description = "IP address of nameserver router will use"
-  type        = string
-  default     = "8.8.8.8"
-}
-
-variable "timezone" {
-  description = "The router's timezone"
-  type        = string
-  default     = "America/Los_Angeles"
-}
-
-variable "dns" {
-  description = "Map of DNS service attributes"
-  type        = string
-  default     = ""
-}
-
-variable "dhcp" {
-  description = "Map of DHCP service attributes"
-  type        = string
-  default     = ""
-}
-
-variable "nat" {
-  description = "JSON map of NAT service attributes"
-  type        = string
-  default     = ""
+# See the argument reference documentation for how to configure the Proxmox
+# Provider for Terraform:
+# https://github.com/Telmate/terraform-provider-proxmox/blob/master/docs/index.md
+provider "proxmox" {
+  pm_api_url          = var.pm_api_url
+  pm_api_token_secret = var.pm_api_token_secret
+  pm_api_token_id     = var.pm_api_token_id
+  pm_tls_insecure     = true
+  pm_log_enable       = true
+  pm_log_file         = "terraform-plugin-proxmox.log"
+  pm_debug            = true
+  pm_log_levels = {
+    _default    = "debug"
+    _capturelog = ""
+  }
 }
 
 resource "proxmox_vm_qemu" "router" {
@@ -136,7 +48,7 @@ resource "proxmox_vm_qemu" "router" {
     type    = "scsi"
   }
   dynamic "network" {
-    for_each = var.interfaces
+    for_each = jsondecode(var.interfaces)
     content {
       bridge   = network.value.bridge
       model    = "virtio"
@@ -166,7 +78,7 @@ resource "ansible_playbook" "playbook_run" {
     ansible_network_os         = "vyos"
     ansible_connection         = "network_cli"
     nameserver                 = var.nameserver
-    interfaces                 = jsonencode(var.interfaces)
+    interfaces                 = var.interfaces
     timezone                   = var.timezone
     dns                        = var.dns
     dhcp                       = var.dhcp
