@@ -41,8 +41,6 @@
       when:
         - listen_address is defined
         - allow_from is defined
-    - debug:
-        var: dhcp | from_json
     - name: Ensure DHCP service is configured
       vars:
         network_name: "{{ dhcp | from_json | community.general.json_query('network_name') }}"
@@ -59,9 +57,9 @@
           - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} default-router '{{default_router}}'
           - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} name-server '{{name_server}}'
           - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} domain-name '{{domain_name}}'
-          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} lease '{{lease}}'
-          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 start '{{ range_start }}'
-          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 stop '{{ range_stop }}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} lease {{lease}}
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 start {{ range_start }}
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 stop {{ range_stop }}
       when:
         - network_name is defined
         - subnet is defined
@@ -73,13 +71,13 @@
         - range_stop is defined
     - name: Ensure NAT is configured
       vars:
-        external_interface: "{{ dhcp | from_json | community.general.json_query('external_interface') }}"
-        internal_network: "{{ dhcp | from_json | community.general.json_query('internal_network') }}"
+        external_interface: "{{ nat | from_json | community.general.json_query('external_interface') }}"
+        internal_network: "{{ nat | from_json | community.general.json_query('internal_network') }}"
       vyos.vyos.vyos_config:
         comment: Configured by Terraform Ansible provider
         lines:
-          - set nat source rule 100 outbound-interface 'eth0'
-          - set nat source rule 100 source address '10.48.80.0/24'
+          - set nat source rule 100 outbound-interface {{external_interface}}
+          - set nat source rule 100 source address {{internal_network}}
           - set nat source rule 100 translation address masquerade
       when:
         - external_interface is defined
