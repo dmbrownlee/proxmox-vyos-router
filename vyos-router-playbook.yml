@@ -41,6 +41,8 @@
       when:
         - listen_address is defined
         - allow_from is defined
+    - debug:
+        var: dhcp | from_json
     - name: Ensure DHCP service is configured
       vars:
         network_name: "{{ dhcp | from_json | community.general.json_query('network_name') }}"
@@ -49,8 +51,8 @@
         name_server: "{{ dhcp | from_json | community.general.json_query('name_server') }}"
         domain_name: "{{ dhcp | from_json | community.general.json_query('domain_name') }}"
         lease: "{{ dhcp | from_json | community.general.json_query('lease') }}"
-        range0_start: "{{ dhcp | from_json | community.general.json_query('range[0].start') }}"
-        range0_stop: "{{ dhcp | from_json | community.general.json_query('range[0].stop') }}"
+        range_start: "{{ dhcp | from_json | community.general.json_query('range_start') }}"
+        range_stop: "{{ dhcp | from_json | community.general.json_query('range_stop') }}"
       vyos.vyos.vyos_config:
         comment: Configured by Terraform Ansible provider
         lines:
@@ -58,8 +60,8 @@
           - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} name-server '{{name_server}}'
           - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} domain-name '{{domain_name}}'
           - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} lease '{{lease}}'
-          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 start '{{ range0_start }}'
-          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 stop '{{ range0_stop }}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 start '{{ range_start }}'
+          - set service dhcp-server shared-network-name {{network_name}} subnet {{subnet}} range 0 stop '{{ range_stop }}'
       when:
         - network_name is defined
         - subnet is defined
@@ -67,8 +69,8 @@
         - name_server is defined
         - domain_name is defined
         - lease is defined
-        - range0_start is defined
-        - range0_stop is defined
+        - range_start is defined
+        - range_stop is defined
     - name: Ensure NAT is configured
       vars:
         external_interface: "{{ dhcp | from_json | community.general.json_query('external_interface') }}"
