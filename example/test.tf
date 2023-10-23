@@ -30,7 +30,7 @@ provider "proxmox" {
 }
 
 # Only edit below if the module interface changed
-module "test" {
+module "router" {
   source              = "git@github.com:dmbrownlee/proxmox-vyos-router"
   pm_api_token_id     = var.pm_api_token_id
   pm_api_url          = var.pm_api_url
@@ -52,7 +52,12 @@ module "test" {
   nat                 = jsonencode(var.nat)
 }
 
-output "output" {
-  value     = module.test.output
+output "resources" {
+  value     = {
+    proxmox_vm_qemu  = module.router.resources.proxmox_vm_qemu
+    ansible_playbook = module.router.resources.ansible_playbook
+    ansible_host     = module.router.resources.ansible_host
+    ansible_group    = module.router.resources.ansible_group
+  }
   sensitive = true
 }

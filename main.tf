@@ -71,11 +71,11 @@ resource "ansible_playbook" "playbook_run" {
   ignore_playbook_failure = true
 }
 
-output "output" {
+output "resources" {
   value = {
-    proxmox_vm_qemu  = proxmox_vm_qemu.router
-    ansible_playbook = ansible_playbook.playbook_run
-    ansible_host     = ansible_host.router
-    ansible_group    = ansible_group.vyosrouters
+    proxmox_vm_qemu  = [ proxmox_vm_qemu.router ]
+    ansible_playbook = [ ansible_playbook.playbook_run ]
+    ansible_host     = [ ansible_host.router ]
+    ansible_group    = [ ansible_group.vyosrouters ]
   }
 }
