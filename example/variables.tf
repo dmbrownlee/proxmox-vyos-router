@@ -28,7 +28,7 @@ variable "interfaces" {
   type        = list(any)
 }
 
-variable "ansible_private_key" {
+variable "ssh_private_key" {
   description = ""
   type        = string
 }

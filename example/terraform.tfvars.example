@@ -18,7 +18,7 @@ interfaces = [
     vlan        = 1000
   }
 ]
-ansible_private_key = "~/keys/vyos"
+ssh_private_key = "~/keys/vyos"
 template_name       = "vyos1.5-20231019"
 cores               = 2
 cpu                 = "x86-64-v2-AES"

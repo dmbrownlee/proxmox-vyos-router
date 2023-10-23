@@ -31,7 +31,7 @@ variable "interfaces" {
   type        = string
 }
 
-variable "ansible_private_key" {
+variable "ssh_private_key" {
   description = "The private SSH key ansible should use"
   type        = string
 }

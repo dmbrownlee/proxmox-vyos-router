@@ -38,7 +38,7 @@ module "router" {
   hostname            = var.hostname
   target_node         = var.target_node
   interfaces          = jsonencode(var.interfaces)
-  ansible_private_key = var.ansible_private_key
+  ssh_private_key = var.ssh_private_key
   template_name       = var.template_name
   cores               = var.cores
   cpu                 = var.cpu

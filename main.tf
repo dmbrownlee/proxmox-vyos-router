@@ -54,7 +54,7 @@ resource "ansible_playbook" "playbook_run" {
   playbook = "${path.module}/vyos-router-playbook.yml"
   name     = proxmox_vm_qemu.router.name
   extra_vars = {
-    private_key_file           = var.ansible_private_key
+    private_key_file           = var.ssh_private_key
     ansible_python_interpreter = "/usr/bin/python3"
     ansible_host               = proxmox_vm_qemu.router.default_ipv4_address
     ansible_user               = "vyos"
