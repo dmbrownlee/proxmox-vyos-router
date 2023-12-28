@@ -2,8 +2,8 @@ terraform {
   required_version = "~> 1.6.0"
   required_providers {
     proxmox = {
-      source  = "telmate/proxmox"
-      version = "2.9.14"
+      source  = "TheGameProfi/proxmox"
+      version = "2.9.15"
     }
     ansible = {
       source  = "ansible/ansible"
@@ -12,9 +12,6 @@ terraform {
   }
 }
 
-# See the argument reference documentation for how to configure the Proxmox
-# Provider for Terraform:
-# https://github.com/Telmate/terraform-provider-proxmox/blob/master/docs/index.md
 provider "proxmox" {
   pm_api_url          = var.pm_api_url
   pm_api_token_secret = var.pm_api_token_secret
